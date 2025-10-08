@@ -1,86 +1,131 @@
-├── .gitignore
-├── happy.jpeg
-├── happy2.jpg
-├── man.jpeg
-├── manage.py
+Вот улучшенная, аккуратно оформленная и читабельная версия твоего `README.md` файла 👇
+(С красивыми блоками, иконками, кодовыми блоками и единым стилем оформления)
+
+---
+
+# 🧠 EmotionalAnalyze
+
+**EmotionalAnalyze** — это сервис на **Django + DRF**, который анализирует эмоции по фотографии.
+Он использует [DeepFace](https://pypi.org/project/deepface/) для распознавания лиц и определения эмоционального состояния (🎭 neutral, 😃 happy, 😢 sad, 😡 angry и др.).
+
+---
+
+## 🚀 Основные возможности
+
+* 📸 **Приём изображений** через API (поддержка `JPG`, `PNG` и других форматов)
+* 🧍‍♂️ **Детекция лица** на фото
+* 😃 **Определение эмоций** с помощью DeepFace
+* 🌐 **REST API**, готовое к интеграции с любыми фронтендами или внешними системами
+* 📝 Поддержка `JSON` и `multipart/form-data` запросов
+* 📄 Автогенерация OpenAPI схем через **drf-spectacular**
+
+---
+
+## 🛠️ Технологический стек
+
+* [🐍 Python 3.10+](https://www.python.org/)
+* [🌿 Django 4+](https://www.djangoproject.com/)
+* [🧰 Django REST Framework](https://www.django-rest-framework.org/)
+* [🧠 DeepFace](https://github.com/serengil/deepface)
+* [📜 drf-spectacular](https://drf-spectacular.readthedocs.io/)
+
+---
+
+## 📂 Установка и запуск проекта
+
+### 1. Клонируйте репозиторий
+
+```bash
+git clone https://github.com/m6d-dev/EmotionalAnalyze.git
+cd EmotionalAnalyze
+```
+
+### 2. Создайте и активируйте виртуальное окружение
+
+```bash
+# Linux / macOS
+python -m venv venv
+source venv/bin/activate
+
+# Windows
+python -m venv venv
+venv\Scripts\activate
+```
+
+### 3. Установите зависимости
+
+```bash
+pip install -r requirements.txt
+```
+
+### 4. Примените миграции и запустите сервер
+
+```bash
+python manage.py migrate
+python manage.py runserver
+```
+
+После запуска API будет доступно по адресу:
+👉 [http://127.0.0.1:8000/api/v1/emotions/analyze/](http://127.0.0.1:8000/api/v1/emotions/analyze/)
+
+---
+
+## 🧪 Пример запроса
+
+### cURL
+
+```bash
+curl -X POST http://127.0.0.1:8000/api/v1/emotions/analyze/ \
+  -F "image=@face.jpg"
+```
+
+### Пример успешного ответа
+
+```json
+{
+  "emotion": "happy",
+  "confidence": 0.97
+}
+```
+
+### Пример ошибки (лицо не найдено)
+
+```json
+[
+  "Не удалось распознать лицо на изображении. Пожалуйста, загрузите фото с видимым лицом."
+]
+```
+
+---
+
+## 📜 Документация API
+
+После запуска проекта открой Swagger UI по адресу:
+👉 [http://127.0.0.1:8000/api/schema/swagger-ui/](http://127.0.0.1:8000/api/schema/swagger-ui/)
+
+---
+
+## 🧰 Структура проекта
+
+```
+EmotionalAnalyze/
+├── src/
+│   ├── apps/
+│   │   └── emotions/
+│   │       ├── serializers.py
+│   │       ├── use_case.py
+│   │       └── views.py
+│   ├── settings.py
+│   └── urls.py
 ├── requirements.txt
-├── src
-    ├── apps
-    │   └── emotions
-    │   │   ├── __init__.py
-    │   │   ├── __pycache__
-    │   │       ├── __init__.cpython-312.pyc
-    │   │       ├── admin.cpython-312.pyc
-    │   │       ├── apps.cpython-312.pyc
-    │   │       ├── models.cpython-312.pyc
-    │   │       ├── repository.cpython-312.pyc
-    │   │       ├── serializers.cpython-312.pyc
-    │   │       ├── service.cpython-312.pyc
-    │   │       ├── urls.cpython-312.pyc
-    │   │       ├── use_case.cpython-312.pyc
-    │   │       └── views.cpython-312.pyc
-    │   │   ├── admin.py
-    │   │   ├── apps.py
-    │   │   ├── migrations
-    │   │       ├── 0001_initial.py
-    │   │       ├── __init__.py
-    │   │       └── __pycache__
-    │   │       │   ├── 0001_initial.cpython-312.pyc
-    │   │       │   └── __init__.cpython-312.pyc
-    │   │   ├── models.py
-    │   │   ├── repository.py
-    │   │   ├── serializers.py
-    │   │   ├── service.py
-    │   │   ├── tests.py
-    │   │   ├── urls.py
-    │   │   ├── use_case.py
-    │   │   └── views.py
-    ├── config
-    │   ├── __init__.py
-    │   ├── __pycache__
-    │   │   ├── __init__.cpython-312.pyc
-    │   │   ├── asgi.cpython-312.pyc
-    │   │   ├── base.cpython-312.pyc
-    │   │   ├── swagger.cpython-312.pyc
-    │   │   ├── urls.cpython-312.pyc
-    │   │   └── wsgi.cpython-312.pyc
-    │   ├── asgi.py
-    │   ├── base.py
-    │   ├── swagger.py
-    │   ├── urls.py
-    │   └── wsgi.py
-    ├── db.sqlite3
-    └── utils
-    │   ├── __pycache__
-    │       ├── consts.cpython-312.pyc
-    │       ├── executable.cpython-312.pyc
-    │       ├── functions.cpython-312.pyc
-    │       ├── models.cpython-312.pyc
-    │       ├── repositories.cpython-312.pyc
-    │       ├── services.cpython-312.pyc
-    │       ├── types.cpython-312.pyc
-    │       └── use_cases.cpython-312.pyc
-    │   ├── consts.py
-    │   ├── executable.py
-    │   ├── functions.py
-    │   ├── models.py
-    │   ├── repositories.py
-    │   ├── services.py
-    │   ├── types.py
-    │   └── use_cases.py
-└── uploads
-    ├── happy.jpeg
-    ├── happy_6olUZ0u.jpeg
-    ├── happy_CM0oDZj.jpeg
-    ├── happy_G67YCno.jpeg
-    ├── happy_UCQXUTt.jpeg
-    ├── happy_VpEwlJQ.jpeg
-    ├── happy_Zbb3pCE.jpeg
-    ├── happy_b9PueQW.jpeg
-    ├── happy_c14Yx0r.jpeg
-    ├── happy_fpcVWQC.jpeg
-    ├── happy_gCYBKYZ.jpeg
-    ├── happy_jW0ymmi.jpeg
-    ├── happy_rp71RFl.jpeg
-    ├── man.jpeg
-    └── people1.jpg
+└── manage.py
+```
+
+---
+
+## 🤝 Вклад в проект
+
+PR’ы и идеи приветствуются.
+Если хотите внести вклад — создайте **issue** или **pull request**.
+
+---
