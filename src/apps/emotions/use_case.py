@@ -9,8 +9,10 @@ class AnalyzeEmotionUseCase(AbstractUseCase):
         image = kwargs.get("images")
         if not image:
             return 
-        res = DeepFace.analyze(image, actions=['emotion'])
-        return res[0]["dominant_emotion"]
-
+        try:
+            res = DeepFace.analyze(image, actions=['emotion'])
+        except ValueError as e:
+            return "Не удалось распознать лицо на изображении. Пожалуйста, загрузите фото с видимым лицом."
+        return res
 
 analyze_emotion_uc = AnalyzeEmotionUseCase()
