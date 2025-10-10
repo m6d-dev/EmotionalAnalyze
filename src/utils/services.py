@@ -25,24 +25,24 @@ from .repositories import (
     AbstractFetchRepository,
     AbstractRepository,
 )
-from .types import TModel
+from .types import TModel, TDto
 
 
-class AbstractFetchService(Generic[TModel]):
+class AbstractFetchService(Generic[TDto]):
     def __init__(self, repository: Union[AbstractFetchRepository]):
         self._repository = repository
 
     @property
-    def model(self) -> TModel:
+    def model(self) -> TDto:
         return self._repository.model
 
-    def get(self, *args, **kwargs) -> TModel:
+    def get(self, *args, **kwargs) -> TDto:
         return self._repository.get(*args, **kwargs)
 
-    def filter(self, *args, **kwargs) -> QuerySet[TModel]:
+    def filter(self, *args, **kwargs) -> List[TDto]:
         return self._repository.filter(*args, **kwargs)
 
-    def all(self) -> QuerySet[TModel]:
+    def all(self) -> List[TDto]:
         return self._repository.all()
 
     def count(self, *args, **kwargs) -> int:
@@ -50,31 +50,40 @@ class AbstractFetchService(Generic[TModel]):
 
     def exists(self, *args, **kwargs) -> bool:
         return self._repository.exists(*args, **kwargs)
+    
+    def filter_values(
+        self,
+        dto_class: TDto,
+        fields: Optional[List[str]] = None,
+        **filters
+    ):
+        return self._repository.filter_values(dto_class=dto_class, fields=fields, **filters)
 
 
-class AbstractEditService(Generic[TModel]):
-    def __init__(self, repository: AbstractEditRepository[TModel]):
+
+class AbstractEditService(Generic[TDto]):
+    def __init__(self, repository: AbstractEditRepository[TDto]):
         self._repository = repository
 
     @property
-    def model(self) -> TModel:
+    def model(self) -> TDto:
         return self._repository.model
 
-    def create(self, **kwargs) -> TModel:
-        instance = self._create(**kwargs)
-        instance.save()
+    def create(self, **kwargs) -> TDto:
+        self._validate(**kwargs)
+        instance: TDto = self._repository.create(**kwargs)
         return instance
 
     def get_or_create(
         self, defaults: Optional[MutableMapping[str, Any]] = None, **kwargs
-    ) -> Tuple[TModel, bool]:
+    ) -> Tuple[TDto, bool]:
         return self._repository.get_or_create(defaults=defaults, **kwargs)
 
-    def _create(self, validate: bool = True, **kwargs) -> TModel:
+    def _validate(self, validate: bool = True, **kwargs) -> TDto:
         self.validate_fields(**kwargs)
         return self.model(**kwargs)  # noqa
 
-    def update(self, **kwargs) -> TModel:
+    def update(self, **kwargs) -> TDto:
         return self._repository.update(**kwargs)
 
     def delete(self, instance) -> None:
@@ -86,21 +95,11 @@ class AbstractEditService(Generic[TModel]):
     def bulk_create_from_dict(
         self, data: Iterable[Mapping[str, Any]], **kwargs
     ) -> List[TModel]:
-        instances = [self._create(**kwargs, **item) for item in data]
+        instances = [self._validate(**kwargs, **item) for item in data]
         return self._repository.bulk_create(instances)
 
     def bulk_create(self, instances: Sequence[TModel]) -> List[TModel]:
         return self._repository.bulk_create(instances)
-
-    def bulk_update(
-        self,
-        instances: Sequence[TModel],
-        fields: Sequence[str],
-        batch_size: Optional[int] = None,
-    ) -> int:
-        return self._repository.bulk_update(
-            instances=instances, fields=fields, batch_size=batch_size
-        )
 
     def validate_fields(self, **kwargs) -> None:
         model_fields_names = {field.name for field in self.model._meta.fields}
@@ -113,22 +112,9 @@ class AbstractEditService(Generic[TModel]):
                     f"Model {self.model.__name__} has no field {field}"
                 )
 
-    def update_or_create(
-        self, defaults: MutableMapping[str, Any], **kwargs
-    ) -> Tuple[TModel, bool]:
-        return self._repository.update_or_create(defaults=defaults, **kwargs)
-
 
 class AbstractService(
-    ABC, Generic[TModel], AbstractFetchService[TModel], AbstractEditService[TModel]
+    ABC, Generic[TDto], AbstractFetchService[TDto], AbstractEditService[TDto]
 ):
-    @property
-    def model(self) -> Type[TModel]:
-        return self._repository.model
-
     def __init__(self, repository: Union[AbstractRepository[TModel]]):
         super().__init__(repository=repository)
-
-    def raise_not_found(self, message: Optional[str] = None):
-        message = message or f"{self.model._meta.verbose_name} не найдена"
-        raise_validation_error_detail(message=message, code=status.HTTP_404_NOT_FOUND)
