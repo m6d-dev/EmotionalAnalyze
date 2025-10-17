@@ -3,6 +3,7 @@ from typing import Any, Union
 from src.utils.executable import AbstractExecutable
 from .types import TModel, TQuerySet
 
+
 class AbstractUseCase(AbstractExecutable, ABC):
     @abstractmethod
     def __init__(self, **kwargs) -> None:

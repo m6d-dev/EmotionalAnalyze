@@ -11,52 +11,83 @@ from typing import (
     Union,
     List,
 )
-from django.db import models
 from src.utils.functions import raise_validation_error
-from src.utils.types import TModel
+from src.utils.types import TModel, TDto, TQuerySet
+from django.forms.models import model_to_dict
 
 
 class AbstractFetchRepository(Generic[TModel]):
     model: Type[TModel]
+    dto_class: Type[TDto]
 
     @property
     def table_name(self) -> str:
         return self.model._meta.db_table
 
-    def get(self, *args, **kwargs) -> Union[TModel, None]:
+    def __to_dto(self, instance: TModel) -> TDto:
+        return self.dto_class.model_validate(model_to_dict(instance))
+
+    def __to_dto_list(self, instances: List[TModel]) -> List[TDto]:
+        return [self.__to_dto(i) for i in instances]
+
+    def get(self, *args, **kwargs) -> Union[TDto, None]:
         res = self.filter(*args, **kwargs)
-        if res.count() > 1:
+        if len(res) == 0:
+            return None
+        if len(res) > 1:
             raise_validation_error("Multiple objects found")
-        return res.first()
+        return res[0]
 
-    def filter(self, *args, **kwargs) -> models.QuerySet[TModel]:
-        return self.all().filter(*args, **kwargs)
+    def filter(self, *args, **kwargs) -> List[TDto]:
+        qs: TQuerySet = self.model.objects.filter(*args, **kwargs)
+        return self.__to_dto_list(list(qs))
 
-    def all(self) -> models.QuerySet[TModel]:
-        return self.model.objects.all()
+    def all(self) -> List[TDto]:
+        qs: TQuerySet = self.model.objects.all()
+        return self.__to_dto_list(list(qs))
 
     def count(self, *args, **kwargs) -> int:
         return self.filter(*args, **kwargs).count()
 
     def exists(self, *args, **kwargs) -> bool:
-        return self.filter(*args, **kwargs).exists()
+        return self.model.objects.filter(*args, **kwargs).exists()
+
+    def filter_values(
+        self, dto_class: TDto, fields: Optional[List[str]] = None, **filters
+    ):
+        qs = self.model.objects.filter(**filters)
+        if fields:
+            qs = qs.values(fields)
+        data_list = list(qs)
+        return [dto_class.model_validate(d) for d in data_list]
 
 
 class AbstractEditRepository(Generic[TModel]):
     model: Type[TModel]
+    dto_class: Type[TDto]
 
-    def create(self, **kwargs) -> TModel:
-        return self.model.objects.create(**kwargs)
+    def __to_dto(self, instance: TModel) -> TDto:
+        return self.dto_class.model_validate(model_to_dict(instance))
+
+    def create(self, **kwargs) -> TDto:
+        instance = self.model.objects.create(**kwargs)
+        return self.__to_dto(instance)
 
     def update_or_create(
         self, defaults: Optional[MutableMapping[str, Any]] = None, **kwargs
-    ) -> Tuple[TModel, bool]:
-        return self.model.objects.update_or_create(defaults=defaults, **kwargs)
+    ) -> Tuple[TDto, bool]:
+        instance, created = self.model.objects.update_or_create(
+            defaults=defaults, **kwargs
+        )
+        return self.__to_dto(instance), created
 
     def get_or_create(
         self, defaults: Optional[MutableMapping[str, Any]] = None, **kwargs
-    ) -> Tuple[TModel, bool]:
-        return self.model.objects.get_or_create(defaults=defaults, **kwargs)
+    ) -> Tuple[TDto, bool]:
+        instance, created = self.model.objects.get_or_create(
+            defaults=defaults, **kwargs
+        )
+        return self.__to_dto(instance), created
 
     @staticmethod
     def update(instance: TModel, **kwargs) -> TModel:
@@ -71,8 +102,9 @@ class AbstractEditRepository(Generic[TModel]):
     def save(instance: TModel, **kwargs):
         instance.save(**kwargs)
 
-    def bulk_create(self, instances: Iterable[TModel], **kwargs) -> List[TModel]:
-        return self.model.objects.bulk_create(instances, **kwargs)
+    def bulk_create(self, instances: Iterable[TModel], **kwargs) -> List[TDto]:
+        objs = self.model.objects.bulk_create(instances, **kwargs)
+        return [self.dto_class.model_validate(o) for o in objs]
 
     def bulk_update(
         self,
@@ -84,19 +116,10 @@ class AbstractEditRepository(Generic[TModel]):
             objs=instances, fields=fields, batch_size=batch_size
         )
 
-    def create_or_update(self, **kwargs) -> Tuple[TModel, bool]:
-        instance, created = self.model.objects.update_or_create(**kwargs)
-        return instance, created
-
 
 class AbstractRepository(
     Generic[TModel],
     AbstractFetchRepository[TModel],
     AbstractEditRepository[TModel],
     ABC,
-):
-    def update_with_query(self, data: dict, **filters) -> int:
-        return self.filter(**filters).update(**data)
-
-    def delete_with_query(self, **filters) -> tuple[int, dict[str, int]]:
-        return self.filter(**filters).delete()
+): ...

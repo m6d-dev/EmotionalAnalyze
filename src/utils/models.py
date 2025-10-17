@@ -8,6 +8,7 @@ class AbstractTimestampsModel(models.Model):
     class Meta:
         abstract = True
 
+
 class AbstractAuditableModel(models.Model):
     created_by = models.ForeignKey(
         "accounts.User",
