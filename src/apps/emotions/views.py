@@ -21,8 +21,11 @@ class EmotionsAnalyzeAPIView(APIView):
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
-            res = image_analyze_handler.handle(
-                dto=ImageDTO(image=request.data.get("images"))
-            )
+            images = request.FILES.getlist('images')
+            res = []
+            for image in images:
+                res.append(image_analyze_handler.handle(
+                    dto=ImageDTO(image=image)
+                ))
             return Response(data={"result": res}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
