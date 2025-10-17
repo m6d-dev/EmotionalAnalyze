@@ -11,9 +11,9 @@ from typing import (
     Union,
     List,
 )
-from django.db import models
 from src.utils.functions import raise_validation_error
 from src.utils.types import TModel, TDto, TQuerySet
+from django.forms.models import model_to_dict
 
 
 class AbstractFetchRepository(Generic[TModel]):
@@ -23,19 +23,20 @@ class AbstractFetchRepository(Generic[TModel]):
     @property
     def table_name(self) -> str:
         return self.model._meta.db_table
-    
+
     def __to_dto(self, instance: TModel) -> TDto:
-        return self.dto_class.model_validate(instance)
-    
+        return self.dto_class.model_validate(model_to_dict(instance))
+
     def __to_dto_list(self, instances: List[TModel]) -> List[TDto]:
         return [self.__to_dto(i) for i in instances]
 
     def get(self, *args, **kwargs) -> Union[TDto, None]:
         res = self.filter(*args, **kwargs)
-        if res.count() > 1:
+        if len(res) == 0:
+            return None
+        if len(res) > 1:
             raise_validation_error("Multiple objects found")
-        instance: TModel = res.first()
-        return self.__to_dto(instance=instance) if instance else None
+        return res[0]
 
     def filter(self, *args, **kwargs) -> List[TDto]:
         qs: TQuerySet = self.model.objects.filter(*args, **kwargs)
@@ -50,25 +51,23 @@ class AbstractFetchRepository(Generic[TModel]):
 
     def exists(self, *args, **kwargs) -> bool:
         return self.model.objects.filter(*args, **kwargs).exists()
-    
+
     def filter_values(
-            self,
-            dto_class: TDto,
-            fields: Optional[List[str]] = None,
-            **filters
-        ):
+        self, dto_class: TDto, fields: Optional[List[str]] = None, **filters
+    ):
         qs = self.model.objects.filter(**filters)
         if fields:
             qs = qs.values(fields)
         data_list = list(qs)
         return [dto_class.model_validate(d) for d in data_list]
 
+
 class AbstractEditRepository(Generic[TModel]):
     model: Type[TModel]
     dto_class: Type[TDto]
 
     def __to_dto(self, instance: TModel) -> TDto:
-        return self.dto_class.model_validate(instance)
+        return self.dto_class.model_validate(model_to_dict(instance))
 
     def create(self, **kwargs) -> TDto:
         instance = self.model.objects.create(**kwargs)
@@ -77,13 +76,17 @@ class AbstractEditRepository(Generic[TModel]):
     def update_or_create(
         self, defaults: Optional[MutableMapping[str, Any]] = None, **kwargs
     ) -> Tuple[TDto, bool]:
-        instance, created = self.model.objects.update_or_create(defaults=defaults, **kwargs)
+        instance, created = self.model.objects.update_or_create(
+            defaults=defaults, **kwargs
+        )
         return self.__to_dto(instance), created
 
     def get_or_create(
         self, defaults: Optional[MutableMapping[str, Any]] = None, **kwargs
     ) -> Tuple[TDto, bool]:
-        instance, created = self.model.objects.get_or_create(defaults=defaults, **kwargs)
+        instance, created = self.model.objects.get_or_create(
+            defaults=defaults, **kwargs
+        )
         return self.__to_dto(instance), created
 
     @staticmethod
@@ -113,10 +116,10 @@ class AbstractEditRepository(Generic[TModel]):
             objs=instances, fields=fields, batch_size=batch_size
         )
 
+
 class AbstractRepository(
     Generic[TModel],
     AbstractFetchRepository[TModel],
     AbstractEditRepository[TModel],
     ABC,
-):
-    ...
+): ...

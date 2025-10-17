@@ -50,15 +50,13 @@ class AbstractFetchService(Generic[TDto]):
 
     def exists(self, *args, **kwargs) -> bool:
         return self._repository.exists(*args, **kwargs)
-    
-    def filter_values(
-        self,
-        dto_class: TDto,
-        fields: Optional[List[str]] = None,
-        **filters
-    ):
-        return self._repository.filter_values(dto_class=dto_class, fields=fields, **filters)
 
+    def filter_values(
+        self, dto_class: TDto, fields: Optional[List[str]] = None, **filters
+    ):
+        return self._repository.filter_values(
+            dto_class=dto_class, fields=fields, **filters
+        )
 
 
 class AbstractEditService(Generic[TDto]):

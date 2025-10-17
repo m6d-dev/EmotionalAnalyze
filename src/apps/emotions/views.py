@@ -1,10 +1,12 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from src.apps.emotions.use_case import analyze_emotion_uc
+from src.apps.emotions.dtos import ImageDTO
 from src.apps.emotions.serializers import PostEmotionsSerializer
 from drf_spectacular.utils import extend_schema, OpenApiResponse
 from rest_framework.parsers import MultiPartParser, JSONParser
+from src.apps.emotions.handler import image_analyze_handler
+
 
 class EmotionsAnalyzeAPIView(APIView):
     authentication_classes = ()
@@ -19,7 +21,8 @@ class EmotionsAnalyzeAPIView(APIView):
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
-            res = analyze_emotion_uc.execute(images=request.data.get("images"))
-            print(res)
+            res = image_analyze_handler.handle(
+                dto=ImageDTO(image=request.data.get("images"))
+            )
             return Response(data={"result": res}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

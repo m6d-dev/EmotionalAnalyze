@@ -17,6 +17,7 @@ tz = pytz.timezone(TIME_ZONE)
 def raise_validation_error(message: Union[str, Dict]) -> None:
     raise serializers.ValidationError(message)
 
+
 def get_datetime() -> datetime:
     return datetime.now(tz).replace(tzinfo=None)
 
@@ -32,8 +33,10 @@ def validate_string(value: str, error_message: str = None) -> None:
     if any(symbol in value for symbol in r"!@#$%^&*+=[]{}\|\\;:<>?"):
         raise_validation_error_detail(error_message)
 
+
 def get_otp_expire_time():
     return get_datetime() + timedelta(minutes=EMAIL_TOKEN_EXPIRE_MINUTES)
+
 
 def generate_random_string(length: int = 8) -> str:
     """Generates a random string of specified length.
@@ -45,7 +48,6 @@ def generate_random_string(length: int = 8) -> str:
         str: Random string.
     """
     return "".join(random.choices(string.ascii_letters + string.digits, k=length))
-
 
 
 def send_confirm_email(confirmation_url, email):
@@ -69,11 +71,11 @@ def send_email_notification(subject: str, message: str, recipients: list | str) 
             "Ошибка при отправке кода подтверждения. Попробуйте ещё раз"
         )
 
+
 def get_expire_time_otp(model):
     if model.otp_expire_time is None:
         return get_datetime()
     return model.otp_expire_time.astimezone(tz).replace(tzinfo=None)
-
 
 
 def confirm_instance_email(instance: models.Model) -> None:
@@ -97,6 +99,7 @@ def ensure_otp_cooldown(instance: models.Model) -> None:
             "Код подтверждения можно получать раз в %s минут."
             % settings.CONFIRMATION_COLDOWN_MINUTES
         )
+
 
 def validate_otp_until_confirm(
     instance: models.Model,
