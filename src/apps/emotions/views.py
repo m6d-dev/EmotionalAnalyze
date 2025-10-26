@@ -6,11 +6,11 @@ from src.apps.emotions.serializers import PostEmotionsSerializer
 from drf_spectacular.utils import extend_schema, OpenApiResponse
 from rest_framework.parsers import MultiPartParser, JSONParser
 from src.apps.emotions.handler import image_analyze_handler
+from rest_framework.permissions import IsAuthenticated
 
 
 class EmotionsAnalyzeAPIView(APIView):
-    authentication_classes = ()
-    permission_classes = ()
+    permission_classes = (IsAuthenticated, )
     parser_classes = (JSONParser, MultiPartParser)
     serializer_class = PostEmotionsSerializer
 

@@ -42,6 +42,9 @@ class ImageAnalyzeHandler:
         result = self.analyze_image_uc.execute(dto=dto)[0]
 
         return {"payload": json.dumps(convert_numpy_to_python(result))}
+    
+    def __validate(self, user_id: int) -> None:
+        ...
 
 
 image_analyze_handler = ImageAnalyzeHandler()

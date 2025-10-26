@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     "corsheaders",
     # apps
     "src.apps.emotions",
+    "src.apps.accounts",
 ]
 
 MIDDLEWARE = [
@@ -114,7 +115,7 @@ AUTH_PASSWORD_VALIDATORS = [
         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
-LANGUAGE_CODE = os.environ.get("DJANGO_LANGUAGE_CODE") or "en-us"
+LANGUAGE_CODE = "ru-ru"
 TIME_ZONE = os.environ.get("DJANGO_TIME_ZONE") or "UTC"
 
 CONFIRMATION_COLDOWN_MINUTES = 1
@@ -153,6 +154,8 @@ SPECTACULAR_SETTINGS = {
         "persistAuthorization": True,
     },
 }
+
+AUTH_USER_MODEL = "accounts.User"
 
 # ============== JWT ==============
 SIMPLE_JWT = {
