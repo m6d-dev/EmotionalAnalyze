@@ -1,4 +1,5 @@
 absl-py==2.3.1
+annotated-types==0.7.0
 asgiref==3.10.0
 astunparse==1.6.3
 attrs==25.4.0
@@ -63,6 +64,8 @@ protobuf==6.32.1
 pyasn1==0.6.1
 pyasn1_modules==0.4.2
 pycparser==2.23
+pydantic==2.12.3
+pydantic_core==2.41.4
 Pygments==2.19.2
 PyJWT==2.10.1
 pyOpenSSL==25.3.0
@@ -89,6 +92,7 @@ tf_keras==2.20.1
 tqdm==4.67.1
 Twisted==25.5.0
 txaio==25.9.2
+typing-inspection==0.4.2
 typing_extensions==4.15.0
 tzdata==2025.2
 uritemplate==4.2.0
