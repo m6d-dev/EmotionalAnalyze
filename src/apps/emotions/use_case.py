@@ -1,6 +1,7 @@
 from src.apps.emotions.dtos import ImageDTO
 from src.utils.use_cases import AbstractUseCase
 from deepface import DeepFace
+from rest_framework.serializers import ValidationError
 import hashlib
 
 
@@ -12,7 +13,7 @@ class AnalyseEmotionUseCase(AbstractUseCase):
         try:
             res = DeepFace.analyze(dto.image, actions=["emotion"])
         except ValueError as e:
-            raise Exception(
+            raise ValidationError(
                 "Не удалось распознать лицо на изображении. Пожалуйста, загрузите фото с видимым лицом."
             )
         return res
