@@ -18,7 +18,10 @@ COPY . /app
 
 # Устанавливаем зависимости Python
 RUN pip install --upgrade pip
-RUN pip install -r requirements.txt
+
+COPY requirements.txt .
+
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Применяем миграции (можно закомментировать, если миграции отдельно)
 RUN python manage.py migrate
