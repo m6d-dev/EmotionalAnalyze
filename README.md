@@ -1,4 +1,4 @@
-# EmotionalAnalyze
+# EmotionalAnalyzeServer
 
 **EmotionalAnalyze** — это сервис на **Django + DRF**, который анализирует эмоции по фотографии.
 Он использует [DeepFace](https://pypi.org/project/deepface/) для распознавания лиц и определения эмоционального состояния (neutral, happy, sad, angry и др.).
