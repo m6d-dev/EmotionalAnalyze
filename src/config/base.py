@@ -161,7 +161,7 @@ AUTH_USER_MODEL = "accounts.User"
 SIMPLE_JWT = {
     "ALGORITHM": os.environ.get("ALGORITHM", "HS256"),
     "ACCESS_TOKEN_LIFETIME": timedelta(
-        minutes=int(os.environ.get("ACCESS_TOKEN_LIFETIME", 5))
+        days=365
     ),
     "REFRESH_TOKEN_LIFETIME": timedelta(
         days=int(os.environ.get("REFRESH_TOKEN_LIFETIME", 1))
