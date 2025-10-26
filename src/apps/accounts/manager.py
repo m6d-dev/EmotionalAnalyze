@@ -6,7 +6,7 @@ class UserManager(BaseUserManager):
 
     def _create_user(self, username, password=None, **extra_fields):
         from src.apps.accounts.models import User
-        
+
         """Create and save a User with the given username and password."""
         if not username:
             raise ValueError("The given username must be set")

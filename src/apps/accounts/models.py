@@ -20,11 +20,10 @@ class User(CustomAbstractUser):
         verbose_name = "Пользователь"
         verbose_name_plural = "Пользователи"
 
+
 class UserUsageTracker(models.Model):
     user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name="usage_trackers"
+        User, on_delete=models.CASCADE, related_name="usage_trackers"
     )
     api_call_count = models.PositiveIntegerField(default=0)
     last_called_at = models.DateTimeField(auto_now=True)
@@ -32,11 +31,11 @@ class UserUsageTracker(models.Model):
     class Meta:
         verbose_name = "User API Usage Tracker"
         verbose_name_plural = "User API Usage Trackers"
-        unique_together = ('user',)
+        unique_together = ("user",)
 
     def increment(self):
         self.api_call_count += 1
-        self.save(update_fields=['api_call_count', 'last_called_at'])
+        self.save(update_fields=["api_call_count", "last_called_at"])
 
     def __str__(self):
         return f"{self.user.username} - {self.api_call_count} calls"

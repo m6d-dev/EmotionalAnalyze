@@ -1,8 +1,6 @@
 from src.apps.emotions.dtos import ImageDTO
-from src.apps.emotions.service import EmotionsService
 from src.utils.use_cases import AbstractUseCase
 from deepface import DeepFace
-from django.core.files.uploadedfile import InMemoryUploadedFile
 import hashlib
 
 
@@ -14,7 +12,9 @@ class AnalyseEmotionUseCase(AbstractUseCase):
         try:
             res = DeepFace.analyze(dto.image, actions=["emotion"])
         except ValueError as e:
-            return "Не удалось распознать лицо на изображении. Пожалуйста, загрузите фото с видимым лицом."
+            raise Exception(
+                "Не удалось распознать лицо на изображении. Пожалуйста, загрузите фото с видимым лицом."
+            )
         return res
 
 
